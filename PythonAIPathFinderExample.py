@@ -1,13 +1,14 @@
 import random
+import time
 
 class Board:
     def __init__(self, size=10):
         self.size = size
         self.board = [['.' for _ in range(size)] for _ in range(size)]
-        self.player_pos = [size-1, 0]  # Player starts at bottom left
-        self.target_pos = [0, size-1]  # Target is at top right
+        self.player_pos = [size-1, 0]
+        self.target_pos = [0, size-1]
         self.wall_pos = [(size//2 - 1, size//2 - 1), (size//2, size//2 - 1), 
-                         (size//2 - 1, size//2), (size//2, size//2)]  # Walls in the center
+                         (size//2 - 1, size//2), (size//2, size//2)]
         self.setup_board()
 
     def setup_board(self):
@@ -42,21 +43,46 @@ class Board:
     def is_at_target(self):
         return self.player_pos == self.target_pos
 
+    def print_board(self):
+        for row in self.board:
+            print(' '.join(row))
+        print()
+
 def run_simulation(iterations=100):
     best_steps = float('inf')
+    best_path = []
     for _ in range(iterations):
         board = Board()
         steps = 0
+        path = []
         while not board.is_at_target():
-            board.move_player_random()
+            if board.move_player_random():
+                path.append(board.player_pos.copy())  # Store each successful move
             steps += 1
             if steps >= best_steps:
-                break  # Stop current game if it exceeds the best step count
-        if board.is_at_target():
-            best_steps = min(best_steps, steps)
+                break
+        if board.is_at_target() and steps < best_steps:
+            best_steps = steps
+            best_path = path.copy()
 
-    return best_steps
+    return best_steps, best_path
 
-# Run the simulation 100 times and get the best result
-best_result = run_simulation()
+def animate_path(board, path):
+    print("Animating the best path taken:")
+    time.sleep(1)  # Wait a second before starting the animation
+    for pos in path:
+        board.board = [['.' for _ in range(board.size)] for _ in range(board.size)]
+        for row, col in board.wall_pos:
+            board.board[row][col] = 'W'
+        board.board[pos[0]][pos[1]] = 'P'
+        board.board[board.target_pos[0]][board.target_pos[1]] = 'T'
+        board.print_board()
+        time.sleep(0.1)  # Delay between steps for animation
+
+# Run the simulation 100 times and get the best result and path
+best_result, best_path = run_simulation()
 print(f"The fewest steps taken to reach the target in 100 simulations was: {best_result}")
+
+# Initialize a new board and animate the best path
+board = Board()
+animate_path(board, best_path)
