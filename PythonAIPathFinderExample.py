@@ -48,7 +48,7 @@ class Board:
             print(' '.join(row))
         print()
 
-def run_simulation(iterations=100):
+def run_simulation(iterations=100000):
     best_steps = float('inf')
     best_path = []
     for _ in range(iterations):
@@ -57,7 +57,7 @@ def run_simulation(iterations=100):
         path = []
         while not board.is_at_target():
             if board.move_player_random():
-                path.append(board.player_pos.copy())  # Store each successful move
+                path.append(board.player_pos.copy())
             steps += 1
             if steps >= best_steps:
                 break
@@ -69,7 +69,7 @@ def run_simulation(iterations=100):
 
 def animate_path(board, path):
     print("Animating the best path taken:")
-    time.sleep(1)  # Wait a second before starting the animation
+    time.sleep(1)
     for pos in path:
         board.board = [['.' for _ in range(board.size)] for _ in range(board.size)]
         for row, col in board.wall_pos:
@@ -77,7 +77,29 @@ def animate_path(board, path):
         board.board[pos[0]][pos[1]] = 'P'
         board.board[board.target_pos[0]][board.target_pos[1]] = 'T'
         board.print_board()
-        time.sleep(0.1)  # Delay between steps for animation
+        time.sleep(0.1)
+
+    # After animation, print the final path with ASCII arrows
+    print_final_path(board, path)
+
+def print_final_path(board, path):
+    board.setup_board()  # Reset board
+    arrows = {'up': '↑', 'down': '↓', 'left': '←', 'right': '→'}
+    
+    # Determine direction for each move and place arrows
+    for i in range(len(path) - 1):
+        curr_pos, next_pos = path[i], path[i + 1]
+        if next_pos[0] < curr_pos[0]: direction = 'up'
+        elif next_pos[0] > curr_pos[0]: direction = 'down'
+        elif next_pos[1] < curr_pos[1]: direction = 'left'
+        elif next_pos[1] > curr_pos[1]: direction = 'right'
+        board.board[curr_pos[0]][curr_pos[1]] = arrows[direction]
+    # Ensure the target is correctly marked after placing arrows
+    board.board[board.target_pos[0]][board.target_pos[1]] = 'T'
+
+    # Print the number of steps and the final board with ASCII arrows
+    print(f"Final best path took {len(path)} steps.")
+    board.print_board()
 
 # Run the simulation 100 times and get the best result and path
 best_result, best_path = run_simulation()
