@@ -128,7 +128,7 @@ def print_final_path(board, path):
     print(f"Final best path took {len(path)} steps.")
     board.print_board()
 
-# Run the simulation 100 times and get the best result and path
+# After running the simulation and get the best result and path
 best_result, best_path = run_simulation()
         # Marking the target's position with 'T'
 print(f"The fewest steps taken to reach the target in 100 simulations was: {best_result}")
