@@ -1,11 +1,14 @@
+import random
+
 class Board:
-    def __init__(self, size=20):
+    def __init__(self, size=10):  # Adjusted board size to 10x10
         self.size = size
         self.board = [['.' for _ in range(size)] for _ in range(size)]
         self.player_pos = [size-1, 0]  # Player starts at bottom left
         self.target_pos = [0, size-1]  # Target is at top right
+        # Adjusting wall position for a smaller board
         self.wall_pos = [(size//2 - 1, size//2 - 1), (size//2, size//2 - 1), 
-                         (size//2 - 1, size//2), (size//2, size//2)]  # 2x2 wall in the middle
+                         (size//2 - 1, size//2), (size//2, size//2)]
         self.setup_board()
 
     def setup_board(self):
@@ -19,8 +22,11 @@ class Board:
             print(' '.join(row))
         print()
 
+    def move_player_random(self):
+        directions = ['up', 'down', 'left', 'right']
+        return self.move_player(random.choice(directions))
+
     def move_player(self, direction):
-        # Calculate new position based on direction
         new_pos = self.player_pos.copy()
         if direction == 'up':
             new_pos[0] -= 1
@@ -31,10 +37,8 @@ class Board:
         elif direction == 'right':
             new_pos[1] += 1
 
-        # Check for wall collision or out of bounds
         if (0 <= new_pos[0] < self.size and 0 <= new_pos[1] < self.size and 
             (new_pos[0], new_pos[1]) not in self.wall_pos):
-            # Move is valid, update player's position
             self.board[self.player_pos[0]][self.player_pos[1]] = '.'
             self.player_pos = new_pos
             self.board[self.player_pos[0]][self.player_pos[1]] = 'P'
@@ -44,22 +48,24 @@ class Board:
     def is_at_target(self):
         return self.player_pos == self.target_pos
 
-def simple_ai_pathfinder(board):
+    def calculate_score(self):
+        distance = abs(self.player_pos[0] - self.target_pos[0]) + abs(self.player_pos[1] - self.target_pos[1])
+        return max(0, self.size - distance)  # Score based on closeness to target
+
+def explore_without_knowledge(board, move_limit=9999):
     steps = 0
-    while not board.is_at_target():
-        if board.player_pos[0] > board.target_pos[0]:
-            board.move_player('up')
-        elif board.player_pos[1] < board.target_pos[1]:
-            board.move_player('right')
-        board.print_board()
+    while steps < move_limit and not board.is_at_target():
+        board.move_player_random()
         steps += 1
-        if steps > 100:  # Prevent infinite loops
-            print("Failed to reach target within step limit.")
-            break
+    board.print_board()
     if board.is_at_target():
         print(f"Target reached in {steps} steps.")
+    else:
+        print(f"Player died after {steps} moves.")
+    score = board.calculate_score()
+    print(f"Final score (based on closeness to target): {score}")
 
 # Initialize and run the simulation
 board = Board()
 board.print_board()
-simple_ai_pathfinder(board)
+explore_without_knowledge(board)
